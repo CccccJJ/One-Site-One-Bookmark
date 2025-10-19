@@ -1,0 +1,11 @@
+{
+  "name": "One Site One Bookmark",
+  "description": "阅读不丢位，一书一签智能跟。",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": ["bookmarks"],
+  "background": {
+    "service_worker": "script/service-worker.js",
+    "type": "module"
+  }
+}
