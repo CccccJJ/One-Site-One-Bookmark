@@ -1,6 +1,11 @@
+import {curr_tab_site_is_recorded} from './utils/tab.js'
+
 async function process_new_bookmark(bookmark) {
-    const newUrl = new URL(bookmark.url);
-    const domain = newUrl.hostname;
+    if(!await curr_tab_site_is_recorded()){
+        return
+    }
+
+    const domain = new URL(bookmark.url).hostname;
 
     const tree = await chrome.bookmarks.getTree();
 
@@ -14,7 +19,6 @@ async function process_new_bookmark(bookmark) {
         await chrome.bookmarks.remove(bm.id);
     })
 }
-
 function findBookMarksByDomain(bookmarkNodes, domain) {
     const result = [];
     function traverse(nodes) {

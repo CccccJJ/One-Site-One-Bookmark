@@ -3,9 +3,15 @@
   "description": "阅读不丢位，一书一签智能跟。",
   "version": "1.0",
   "manifest_version": 3,
-  "permissions": ["bookmarks"],
+  "permissions": ["bookmarks", "storage", "activeTab"],
+  "host_permissions": [
+    "*://*/*"
+  ],
   "background": {
     "service_worker": "script/service-worker.js",
     "type": "module"
+  },
+  "action": {
+    "default_popup": "page/hello.html"
   }
 }
