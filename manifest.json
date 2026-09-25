@@ -3,7 +3,7 @@
   "description": "阅读不丢位，一书一签智能跟。",
   "version": "1.0",
   "manifest_version": 3,
-  "permissions": ["bookmarks", "storage", "activeTab"],
+  "permissions": ["bookmarks", "storage"],
    "icons": {
     "16": "images/icon_16.png",
     "32": "images/icon_32.png",

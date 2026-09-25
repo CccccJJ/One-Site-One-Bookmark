@@ -15,9 +15,13 @@ async function process_new_bookmark(bookmark) {
         return bm.id !== bookmark.id;
     });
 
-    otherBookmarks.forEach(async bm => {
-        await chrome.bookmarks.remove(bm.id);
-    })
+    for(const bm of otherBookmarks) {
+        try {
+            await chrome.bookmarks.remove(bm.id);
+        } catch(e) {
+            console.log(`${bm.url} 删除书签出错. ${e}`)
+        }
+    }
 }
 function findBookMarksByDomain(bookmarkNodes, domain) {
     const result = [];
