@@ -6,23 +6,30 @@
 
     <body>
         <div id="header">
-            <span id="hostname"></span>
+            <div id="site">
+                <span class="label">当前网站</span>
+                <span id="hostname"></span>
+                <span id="count"></span>
+            </div>
             <p id="btn">
                 <span id="btn-circle"></span>
                 <span id="btn-text">OFF</span>
             </p>
         </div>
-        <p id="count"></p>
 
         <div id="confirm" hidden>
             <p id="confirm-text"></p>
-            <button id="confirm-ok">确认开启</button>
-            <button id="confirm-cancel">取消</button>
+            <div class="actions">
+                <button id="confirm-cancel" class="btn-secondary">取消</button>
+                <button id="confirm-ok" class="btn-primary">确认开启</button>
+            </div>
         </div>
 
-        <h4>最近删除</h4>
-        <p id="trash-empty">暂无</p>
-        <ul id="trash"></ul>
+        <div id="trash-section">
+            <h4>最近删除<span id="trash-count"></span></h4>
+            <p id="trash-empty">暂无删除记录</p>
+            <ul id="trash"></ul>
+        </div>
     <script src="../script/hello.js" type="module"></script>
   </body>
 </html>

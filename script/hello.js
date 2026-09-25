@@ -12,6 +12,7 @@ const _CONFIRM_OK = document.querySelector("#confirm-ok");
 const _CONFIRM_CANCEL = document.querySelector("#confirm-cancel");
 const _TRASH = document.querySelector("#trash");
 const _TRASH_EMPTY = document.querySelector("#trash-empty");
+const _TRASH_COUNT = document.querySelector("#trash-count");
 
 (async function() {
     const hostname = await get_curr_tab_hostname()
@@ -93,19 +94,31 @@ async function render_trash(hostname) {
     _TRASH.replaceChildren(...trash.map(item => {
         const li = document.createElement("li")
 
+        const text = document.createElement("div")
+        text.className = "item-text"
+        text.title = item.url
+
         const title = document.createElement("span")
+        title.className = "item-title"
         title.textContent = item.title || item.url
-        title.title = item.url
+
+        const url = document.createElement("span")
+        url.className = "item-url"
+        url.textContent = item.url.replace(/^https?:\/\//, "")
+
+        text.append(title, url)
 
         const btn = document.createElement("button")
+        btn.className = "btn-restore"
         btn.textContent = "恢复"
         btn.onclick = function() {
             restore(item.id, hostname)
         }
 
-        li.append(title, btn)
+        li.append(text, btn)
         return li
     }))
+    _TRASH_COUNT.textContent = trash.length || ""
 }
 
 async function restore(id, hostname) {
