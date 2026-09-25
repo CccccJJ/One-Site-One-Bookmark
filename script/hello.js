@@ -13,11 +13,18 @@ const _CONFIRM_CANCEL = document.querySelector("#confirm-cancel");
 const _TRASH = document.querySelector("#trash");
 const _TRASH_EMPTY = document.querySelector("#trash-empty");
 const _TRASH_COUNT = document.querySelector("#trash-count");
+const _TRASH_SECTION = document.querySelector("#trash-section");
+const _TRASH_TOGGLE = document.querySelector("#trash-toggle");
+const _TRASH_CLEAR = document.querySelector("#trash-clear");
+
+// 清空按钮处于「确认清空？」状态时的超时计时器
+let clear_timer = null;
 
 (async function() {
     const hostname = await get_curr_tab_hostname()
 
     render_trash(hostname)
+    bind_trash_action(hostname)
 
     if(!hostname) {
         _HOSTNAME.textContent = "当前页面不支持"
@@ -102,36 +109,96 @@ async function render_trash(hostname) {
         title.className = "item-title"
         title.textContent = item.title || item.url
 
+        const meta = document.createElement("div")
+        meta.className = "item-meta"
+
         const url = document.createElement("span")
         url.className = "item-url"
         url.textContent = item.url.replace(/^https?:\/\//, "")
 
-        text.append(title, url)
+        const time = document.createElement("span")
+        time.className = "item-time"
+        time.textContent = format_time_ago(item.removed_at)
+
+        meta.append(url, time)
+        text.append(title, meta)
 
         const btn = document.createElement("button")
         btn.className = "btn-restore"
         btn.textContent = "恢复"
+
+        const discard = document.createElement("button")
+        discard.className = "btn-discard"
+        discard.textContent = "×"
+        discard.title = "删除记录（不可恢复）"
+
         btn.onclick = function() {
-            btn.disabled = true
-            restore(item.id, hostname)
+            btn.disabled = discard.disabled = true
+            trash_action({type: "restore", id: item.id}, hostname)
+        }
+        discard.onclick = function() {
+            btn.disabled = discard.disabled = true
+            trash_action({type: "discard", id: item.id}, hostname)
         }
 
-        li.append(text, btn)
+        li.append(text, btn, discard)
         return li
     }))
     _TRASH_COUNT.textContent = trash.length || ""
+    _TRASH_CLEAR.hidden = trash.length === 0
 }
 
-async function restore(id, hostname) {
-    const response = await chrome.runtime.sendMessage({type: "restore", id})
+function bind_trash_action(hostname) {
+    _TRASH_TOGGLE.onclick = function() {
+        _TRASH_SECTION.classList.toggle("expanded")
+        reset_clear_button()
+    }
+
+    _TRASH_CLEAR.onclick = function() {
+        if(!clear_timer) {
+            _TRASH_CLEAR.textContent = "确认清空？"
+            _TRASH_CLEAR.classList.add("danger")
+            clear_timer = setTimeout(reset_clear_button, 3000)
+            return
+        }
+
+        reset_clear_button()
+        trash_action({type: "clear"}, hostname)
+    }
+}
+
+function reset_clear_button() {
+    clearTimeout(clear_timer)
+    clear_timer = null
+    _TRASH_CLEAR.textContent = "清空"
+    _TRASH_CLEAR.classList.remove("danger")
+}
+
+async function trash_action(message, hostname) {
+    const response = await chrome.runtime.sendMessage(message)
     if(!response?.ok) {
-        console.log(`恢复书签出错. ${response?.error}`)
+        console.log(`${message.type} 出错. ${response?.error}`)
     }
 
     render_trash(hostname)
     if(hostname) {
         render_count(hostname)
     }
+}
+
+function format_time_ago(timestamp) {
+    const minutes = Math.floor((Date.now() - timestamp) / 60000)
+    if(minutes < 1) {
+        return "刚刚"
+    }
+    if(minutes < 60) {
+        return `${minutes} 分钟前`
+    }
+    if(minutes < 60 * 24) {
+        return `${Math.floor(minutes / 60)} 小时前`
+    }
+
+    return `${Math.floor(minutes / 60 / 24)} 天前`
 }
 
 function page_on_state() {

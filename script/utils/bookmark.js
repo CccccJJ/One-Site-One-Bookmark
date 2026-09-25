@@ -1,5 +1,6 @@
 const _TRASH_KEY = "trash"
 const _TRASH_LIMIT = 50
+const _TRASH_TTL = 7 * 24 * 60 * 60 * 1000
 
 export function find_bookmarks_by_domain(bookmarkNodes, domain) {
     const result = [];
@@ -27,8 +28,9 @@ export function find_bookmarks_by_domain(bookmarkNodes, domain) {
 
 export async function get_trash() {
     const result = await chrome.storage.local.get(_TRASH_KEY)
+    const now = Date.now()
 
-    return result[_TRASH_KEY] ?? []
+    return (result[_TRASH_KEY] ?? []).filter(item => now - item.removed_at < _TRASH_TTL)
 }
 
 export async function add_to_trash(bookmarks) {
@@ -48,4 +50,8 @@ export async function add_to_trash(bookmarks) {
 export async function remove_from_trash(id) {
     const trash = (await get_trash()).filter(item => item.id !== id)
     await chrome.storage.local.set({[_TRASH_KEY]: trash})
+}
+
+export async function clear_trash() {
+    await chrome.storage.local.set({[_TRASH_KEY]: []})
 }

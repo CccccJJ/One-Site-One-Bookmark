@@ -26,9 +26,14 @@
         </div>
 
         <div id="trash-section">
-            <h4>最近删除<span id="trash-count"></span></h4>
-            <p id="trash-empty">暂无删除记录</p>
-            <ul id="trash"></ul>
+            <div id="trash-header">
+                <button id="trash-toggle"><span id="trash-arrow">▸</span>最近删除<span id="trash-count"></span></button>
+                <button id="trash-clear">清空</button>
+            </div>
+            <div id="trash-body">
+                <p id="trash-empty">暂无删除记录（保留 7 天）</p>
+                <ul id="trash"></ul>
+            </div>
         </div>
     <script src="../script/hello.js" type="module"></script>
   </body>

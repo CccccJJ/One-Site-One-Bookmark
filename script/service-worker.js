@@ -1,7 +1,16 @@
 import {is_site_enabled} from './utils/site.js'
-import {find_bookmarks_by_domain, get_trash, add_to_trash, remove_from_trash} from './utils/bookmark.js'
+import {find_bookmarks_by_domain, get_trash, add_to_trash, remove_from_trash, clear_trash} from './utils/bookmark.js'
 
 let importing = false;
+
+// trash 的写操作串行执行, 避免并发「读-改-写」互相覆盖
+let trash_queue = Promise.resolve();
+
+function with_trash_lock(fn) {
+    const run = trash_queue.then(fn);
+    trash_queue = run.catch(() => {});
+    return run;
+}
 
 // 正在恢复的书签 URL, 其 onCreated 不触发删除
 const restoring_urls = new Set();
@@ -32,14 +41,14 @@ async function process_new_bookmark(bookmark) {
         return bm.id !== bookmark.id;
     });
 
-    await add_to_trash(otherBookmarks);
+    await with_trash_lock(() => add_to_trash(otherBookmarks));
 
     for(const bm of otherBookmarks) {
         try {
             await chrome.bookmarks.remove(bm.id);
         } catch(e) {
             console.log(`${bm.url} 删除书签出错. ${e}`)
-            await remove_from_trash(bm.id);
+            await with_trash_lock(() => remove_from_trash(bm.id));
         }
     }
 }
@@ -79,8 +88,14 @@ async function restore_from_trash(id) {
         throw e;
     }
 
-    await remove_from_trash(id);
+    await with_trash_lock(() => remove_from_trash(id));
 }
+
+const message_handlers = {
+    restore: message => restore_bookmark(message.id),
+    discard: message => with_trash_lock(() => remove_from_trash(message.id)),
+    clear: () => with_trash_lock(() => clear_trash()),
+};
 
 
 chrome.bookmarks.onCreated.addListener((_, bookmark) => {
@@ -96,11 +111,12 @@ chrome.bookmarks.onImportEnded.addListener(() => {
 });
 
 chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
-    if(message.type !== "restore"){
+    const handler = message_handlers[message.type];
+    if(!handler){
         return
     }
 
-    restore_bookmark(message.id).then(
+    handler(message).then(
         () => sendResponse({ok: true}),
         e => sendResponse({ok: false, error: String(e)})
     );

@@ -17,6 +17,8 @@
     --warn-bg: #fff7ed;
     --warn-border: #fdba74;
     --warn-text: #9a3412;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
 }
 
 body {
@@ -187,11 +189,57 @@ button:disabled {
 
 /* 最近删除 */
 
-#trash-section h4 {
-    margin: 14px 0 6px;
-    font-size: 12px;
+#trash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 12px -6px 4px;
+}
+
+#trash-toggle,
+#trash-clear {
+    border: none;
+    background-color: transparent;
+    padding: 4px 6px;
+}
+
+#trash-toggle {
+    display: flex;
+    align-items: center;
     font-weight: 600;
     color: var(--muted);
+}
+
+#trash-toggle:hover,
+#trash-clear:hover {
+    color: var(--text);
+    background-color: var(--hover);
+}
+
+#trash-arrow {
+    display: inline-block;
+    width: 12px;
+    margin-right: 4px;
+    font-size: 10px;
+    transition: transform .2s;
+}
+
+.expanded #trash-arrow {
+    transform: rotate(90deg);
+}
+
+#trash-clear {
+    color: var(--muted);
+}
+
+#trash-clear.danger {
+    color: var(--danger);
+    background-color: var(--danger-soft);
+}
+
+#trash-section:not(.expanded) #trash-body,
+#trash-section:not(.expanded) #trash-clear {
+    display: none;
 }
 
 #trash-count {
@@ -248,9 +296,40 @@ button:disabled {
     white-space: nowrap;
 }
 
-.item-url {
+.item-meta {
+    display: flex;
+    gap: 6px;
     font-size: 11px;
     color: var(--muted);
+}
+
+.item-url {
+    min-width: 0;
+}
+
+.item-time {
+    flex-shrink: 0;
+}
+
+.btn-discard {
+    flex-shrink: 0;
+    margin-left: -6px;
+    padding: 2px 6px;
+    border: none;
+    background-color: transparent;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--muted);
+    opacity: .4;
+}
+
+#trash li:hover .btn-discard,
+.btn-discard:focus-visible {
+    opacity: 1;
+}
+
+.btn-discard:hover {
+    color: var(--danger);
 }
 
 .btn-restore {
