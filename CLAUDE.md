@@ -36,3 +36,4 @@ One Site One Bookmark：Chrome 扩展（Manifest V3），按网站开关；某�
 - 函数与变量用 `snake_case`，popup 中的 DOM 常量用 `_UPPER` 前缀（如 `_BTN`）。
 - 新增文件需保持 ES module 形式（manifest 中 service worker 为 `"type": "module"`，popup 脚本用 `type="module"`）。
 - 修改 `manifest.json` 的 `permissions` / `host_permissions` 前先确认必要性。
+- 每完成一项功能或修复，在 `DEVLOG.md`「开发记录」最上方追加一节（背景、决策、改动、验证、对应提交），并同步更新「当前状态」与「待办 / 遗留」。
