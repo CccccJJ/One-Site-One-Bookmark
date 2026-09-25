@@ -1,11 +1,15 @@
-import {curr_tab_site_is_recorded} from './utils/tab.js'
+import {is_site_enabled} from './utils/site.js'
 
 async function process_new_bookmark(bookmark) {
-    if(!await curr_tab_site_is_recorded()){
+    if(!bookmark.url){
         return
     }
 
     const domain = new URL(bookmark.url).hostname;
+
+    if(!await is_site_enabled(domain)){
+        return
+    }
 
     const tree = await chrome.bookmarks.getTree();
 
@@ -50,4 +54,8 @@ function findBookMarksByDomain(bookmarkNodes, domain) {
 
 chrome.bookmarks.onCreated.addListener((_, bookmark) => {
     process_new_bookmark(bookmark);
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.local.remove("recorded_datetime");
 });

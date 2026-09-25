@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-One Site One Bookmark：Chrome 扩展（Manifest V3），开关打开时，新建书签会自动删除同一 hostname 下的其他旧书签，使每个网站只保留最新一个书签（用于记录阅读进度）。
+One Site One Bookmark：Chrome 扩展（Manifest V3），按网站开关；某网站开关打开时，在该网站新建书签会自动删除同一 hostname 下的其他旧书签，使每个网站只保留最新一个书签（用于记录阅读进度）。
 
 纯原生 HTML/CSS/JS（ES modules），无 `package.json`、无构建步骤、无 lint、无测试框架。
 
@@ -13,18 +13,18 @@ One Site One Bookmark：Chrome 扩展（Manifest V3），开关打开时，新�
 - 加载：`chrome://extensions` → 开启「开发者模式」→「加载已解压的扩展程序」→ 选择仓库根目录。
 - 修改后：在扩展卡片上点刷新；popup 改动重新打开 popup 即可生效。
 - 调试 service worker：扩展卡片上的「Service Worker」链接打开 DevTools 看 console。
-- 验证流程：打开开关 → 对同一网站新建书签 → 确认旧书签被删除；关闭开关后不应删除。
+- 验证流程：网站 X 打开开关、网站 Y 保持关闭 → 两边各新建两个书签 → X 只剩最新一个，Y 两个都保留。
 
 ## 架构
 
-两个运行上下文，通过 `chrome.storage.local` 共享一个开关状态：
+两个运行上下文，通过 `chrome.storage.local` 的 key `enabled_sites`（`{ [hostname]: 开启时间 }`）共享各网站的开关状态：
 
-- `page/hello.html` + `script/hello.js`：popup UI，切换开关。开启时写入 key `recorded_datetime`，关闭时删除该 key。
-- `script/service-worker.js`：后台监听 `chrome.bookmarks.onCreated`，开关开启时遍历整棵书签树，按 `URL.hostname` 精确匹配，删除除新书签以外的同域书签。
-- `script/utils/tab.js`：`curr_tab_site_is_recorded()` 判断 `recorded_datetime` 是否存在，两端共用。
+- `page/hello.html` + `script/hello.js`：popup UI，读取当前 tab 的 hostname 并切换该网站的开关；非 http(s) 页面按钮置灰不可点。
+- `script/service-worker.js`：后台监听 `chrome.bookmarks.onCreated`，以**新书签自身的 hostname** 判断是否开启（不看当前 tab），开启时遍历整棵书签树，删除除新书签以外的同域书签。`onInstalled` 时清除旧版全局开关 key `recorded_datetime`。
+- `script/utils/site.js`：`is_site_enabled` / `enable_site` / `disable_site`，两端共用。
 
 需要注意的现状：
-- 尽管函数名含 "curr_tab_site"，开关是**全局**的，不区分站点，也不读取当前 tab。
+- 读取 `tab.url` 依赖 `host_permissions: *://*/*`，未申请 `tabs` / `activeTab`。
 - hostname 精确匹配，`www.example.com` 与 `example.com` 视为不同网站。
 - popup 开/关样式通过切换 `css/hello.css` 中成对的 `btn-on*` / `btn-off*` class 实现。
 

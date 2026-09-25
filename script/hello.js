@@ -1,37 +1,46 @@
-import {curr_tab_site_is_recorded} from './utils/tab.js'
+import {is_site_enabled, enable_site, disable_site} from './utils/site.js'
 
 const _BTN = document.querySelector("#btn");
 const _CIRCLE = document.querySelector("#btn-circle");
 const _TEXT = document.querySelector("#btn-text");
 
 (async function() {
-    await curr_tab_site_is_recorded()? page_on_state() : page_off_state();
+    const hostname = await get_curr_tab_hostname()
+    if(!hostname) {
+        page_disabled_state()
+        return
+    }
 
-    bind_action()
+    await is_site_enabled(hostname)? page_on_state() : page_off_state();
+
+    bind_action(hostname)
 })()
 
-function bind_action() {
+async function get_curr_tab_hostname() {
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true})
+    if(!tab?.url) {
+        return null
+    }
+
+    const url = new URL(tab.url)
+
+    return ["http:", "https:"].includes(url.protocol)? url.hostname : null
+}
+
+function bind_action(hostname) {
     _BTN.onclick = async function(){
-        turn_state()
+        turn_state(hostname)
     }
 }
 
-async function turn_state() {
-    if(await curr_tab_site_is_recorded()) {
+async function turn_state(hostname) {
+    if(await is_site_enabled(hostname)) {
         page_off_state()
-        remove_site_setting()
+        disable_site(hostname)
     } else {
         page_on_state()
-        record_site_setting()
+        enable_site(hostname)
     }
-}
-
-async function record_site_setting() {
-    await chrome.storage.local.set({"recorded_datetime": new Date().toString()})
-}
-
-async function remove_site_setting() {
-    await chrome.storage.local.remove("recorded_datetime")
 }
 
 function page_on_state() {
@@ -46,4 +55,9 @@ function page_off_state() {
     _CIRCLE.className = "btn-off-circle"
     _TEXT.className = "btn-off-text"
     _TEXT.innerHTML = "OFF"
+}
+
+function page_disabled_state() {
+    page_off_state()
+    _BTN.className = "btn-off btn-disabled"
 }

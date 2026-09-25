@@ -70,3 +70,8 @@
     color: white;
     transition: all .5s;
 }
+
+.btn-disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
