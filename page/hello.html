@@ -5,10 +5,24 @@
     </head>
 
     <body>
-        <p id="btn">
-            <span id="btn-circle"></span>
-            <span id="btn-text">OFF</span>
-        </p>
+        <div id="header">
+            <span id="hostname"></span>
+            <p id="btn">
+                <span id="btn-circle"></span>
+                <span id="btn-text">OFF</span>
+            </p>
+        </div>
+        <p id="count"></p>
+
+        <div id="confirm" hidden>
+            <p id="confirm-text"></p>
+            <button id="confirm-ok">确认开启</button>
+            <button id="confirm-cancel">取消</button>
+        </div>
+
+        <h4>最近删除</h4>
+        <p id="trash-empty">暂无</p>
+        <ul id="trash"></ul>
     <script src="../script/hello.js" type="module"></script>
   </body>
 </html>

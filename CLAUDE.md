@@ -13,15 +13,17 @@ One Site One Bookmark：Chrome 扩展（Manifest V3），按网站开关；某�
 - 加载：`chrome://extensions` → 开启「开发者模式」→「加载已解压的扩展程序」→ 选择仓库根目录。
 - 修改后：在扩展卡片上点刷新；popup 改动重新打开 popup 即可生效。
 - 调试 service worker：扩展卡片上的「Service Worker」链接打开 DevTools 看 console。
-- 验证流程：网站 X 打开开关、网站 Y 保持关闭 → 两边各新建两个书签 → X 只剩最新一个，Y 两个都保留。
+- 验证流程：网站 X 打开开关、网站 Y 保持关闭 → 两边各新建两个书签 → X 只剩最新一个，Y 两个都保留；被删的书签出现在 popup「最近删除」中，点恢复后回到原文件夹，且不会触发再次删除。
 
 ## 架构
 
-两个运行上下文，通过 `chrome.storage.local` 的 key `enabled_sites`（`{ [hostname]: 开启时间 }`）共享各网站的开关状态：
+两个运行上下文，通过 `chrome.storage.local` 共享状态：`enabled_sites`（`{ [hostname]: 开启时间 }`）记录各网站开关，`trash`（最近删除的书签，最多 50 条，新的在前）用于恢复。
 
-- `page/hello.html` + `script/hello.js`：popup UI，读取当前 tab 的 hostname 并切换该网站的开关；非 http(s) 页面按钮置灰不可点。
-- `script/service-worker.js`：后台监听 `chrome.bookmarks.onCreated`，以**新书签自身的 hostname** 判断是否开启（不看当前 tab），开启时遍历整棵书签树，删除除新书签以外的同域书签。`onInstalled` 时清除旧版全局开关 key `recorded_datetime`。
-- `script/utils/site.js`：`is_site_enabled` / `enable_site` / `disable_site`，两端共用。
+- `page/hello.html` + `script/hello.js`：popup UI，显示当前 tab 的 hostname 与本站收藏数；开启时若本站已有多于 1 个收藏，先在 popup 内确认再开启；列出「最近删除」并可恢复。非 http(s) 页面开关置灰不可点。
+- `script/service-worker.js`：后台监听 `chrome.bookmarks.onCreated`，以**新书签自身的 hostname** 判断是否开启（不看当前 tab），开启时删除除新书签以外的同域书签，删除前写入 `trash`。书签导入期间（`onImportBegan` ~ `onImportEnded`）不处理。`onInstalled` 时清除旧版全局开关 key `recorded_datetime`。
+- **恢复必须经由 service worker**：popup 通过 `chrome.runtime.sendMessage({type: "restore", id})` 请求，service worker 先记下待恢复的 URL 再 `chrome.bookmarks.create`，对应的 `onCreated` 据此跳过；否则恢复出的书签会被当成最新书签，反而删掉当前书签。
+- `script/utils/site.js`：`is_site_enabled` / `enable_site` / `disable_site`。
+- `script/utils/bookmark.js`：`find_bookmarks_by_domain`（按 hostname 遍历书签树）与 `trash` 的读写。
 
 需要注意的现状：
 - 读取 `tab.url` 依赖 `host_permissions: *://*/*`，未申请 `tabs` / `activeTab`。
