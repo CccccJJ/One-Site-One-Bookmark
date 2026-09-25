@@ -112,6 +112,7 @@ async function render_trash(hostname) {
         btn.className = "btn-restore"
         btn.textContent = "恢复"
         btn.onclick = function() {
+            btn.disabled = true
             restore(item.id, hostname)
         }
 

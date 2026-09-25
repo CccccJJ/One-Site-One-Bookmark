@@ -6,6 +6,9 @@ let importing = false;
 // 正在恢复的书签 URL, 其 onCreated 不触发删除
 const restoring_urls = new Set();
 
+// 正在恢复的 trash 条目 id, 防止连点重复恢复
+const restoring_ids = new Set();
+
 async function process_new_bookmark(bookmark) {
     if(!bookmark.url || importing){
         return
@@ -42,6 +45,19 @@ async function process_new_bookmark(bookmark) {
 }
 
 async function restore_bookmark(id) {
+    if(restoring_ids.has(id)){
+        return
+    }
+
+    restoring_ids.add(id);
+    try {
+        await restore_from_trash(id);
+    } finally {
+        restoring_ids.delete(id);
+    }
+}
+
+async function restore_from_trash(id) {
     const item = (await get_trash()).find(bm => bm.id === id);
     if(!item){
         return
