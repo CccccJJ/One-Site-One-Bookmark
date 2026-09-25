@@ -8,9 +8,12 @@ One Site One Bookmark：Chrome 扩展（Manifest V3），按网站开关；某�
 
 纯原生 HTML/CSS/JS（ES modules），无 `package.json`、无构建步骤、无 lint、无测试框架。
 
+开发历史、各次决策的原因与待办 / 遗留见 `DEVLOG.md`。
+
 ## 开发与验证
 
 - 加载：`chrome://extensions` → 开启「开发者模式」→「加载已解压的扩展程序」→ 选择仓库根目录。
+- **改动必须落到主目录的 `main` 才能被 Chrome 加载**：从 `claude agents` 启动的后台会话默认只能在 `.claude/worktrees/` 下的 worktree 里编辑，改完需提交并 `git merge --ff-only` 回主目录的 `main`，再刷新扩展。若 `.claude/settings.json` 设置了 `{"worktree": {"bgIsolation": "none"}}`，则直接在主目录修改，不使用 worktree。
 - 修改后：在扩展卡片上点刷新；popup 改动重新打开 popup 即可生效。
 - 调试 service worker：扩展卡片上的「Service Worker」链接打开 DevTools 看 console。
 - 验证流程：网站 X 打开开关、网站 Y 保持关闭 → 两边各新建两个书签 → X 只剩最新一个，Y 两个都保留；被删的书签出现在 popup「最近删除」中，点恢复后回到原文件夹，且不会触发再次删除。

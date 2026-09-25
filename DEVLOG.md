@@ -12,7 +12,7 @@
 ## 待办 / 遗留
 
 - [ ] **测试与预览脚本不在仓库里**：模拟测试 `sw_test2.mjs`、popup 预览 `preview/`、截图脚本 `shoot.sh` 都在后台任务的临时目录 `~/.claude/jobs/de96e5bc/tmp/`，任务删除后会一起消失。需要决定是否移入仓库（如 `tests/`，需先在 CLAUDE.md 定目录约定）。
-- [ ] **`.claude/settings.json` 未生效**：后台会话（从 `claude agents` 启动）默认只能在 worktree 里改，改完需合并回主目录 Chrome 才加载得到。写入 `{"worktree": {"bgIsolation": "none"}}` 可关闭；写好后在 CLAUDE.md 加「直接在主目录修改，不使用 worktree」。
+- [ ] **`.claude/settings.json` 未生效**：后台会话（从 `claude agents` 启动）默认只能在 worktree 里改，改完需合并回主目录 Chrome 才加载得到。写入 `{"worktree": {"bgIsolation": "none"}}` 可关闭（CLAUDE.md「开发与验证」已写明两种情况的做法）。
 - [ ] 深色模式（暂缓）。
 - [ ] 最新一版 popup（折叠 / 单条删除 / 清空确认）尚未在真实 Chrome 中确认。
 - 已知限制（暂不处理）：
