@@ -19,7 +19,7 @@
 扩展尚未上架 Chrome 应用商店，需要以「开发者模式」加载：
 
 1. 获取代码（二选一）：
-   - 在 [Releases](https://github.com/CccccJJ/One-Site-One-Bookmark/releases) 下载最新的 `one-site-one-bookmark-*.zip` 并解压；
+   - 在 [Releases](https://github.com/CccccJJ/One-Site-One-Bookmark/releases)（或仓库的 [`releases/`](releases/) 目录）下载最新的 `one-site-one-bookmark-*.zip` 并解压；
    - 或 `git clone https://github.com/CccccJJ/One-Site-One-Bookmark.git`。
 2. 打开 `chrome://extensions`，开启右上角「开发者模式」。
 3. 点击「加载已解压的扩展程序」，选择解压后的目录（或仓库根目录）。
@@ -53,3 +53,4 @@
 
 - 架构与约定：[`CLAUDE.md`](CLAUDE.md)
 - 开发历史、设计决策与待办：[`DEVLOG.md`](DEVLOG.md)
+- 各版本发布说明与安装包：[`releases/`](releases/)

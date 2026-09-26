@@ -40,3 +40,7 @@ One Site One Bookmark：Chrome 扩展（Manifest V3），按网站开关；某�
 - 新增文件需保持 ES module 形式（manifest 中 service worker 为 `"type": "module"`，popup 脚本用 `type="module"`）。
 - 修改 `manifest.json` 的 `permissions` / `host_permissions` 前先确认必要性。
 - 每完成一项功能或修复，在 `DEVLOG.md`「开发记录」最上方追加一节（背景、决策、改动、验证、对应提交），并同步更新「当前状态」与「待办 / 遗留」。
+- 发版：tag 名为 `vX.Y`，与 `manifest.json` 的 `version` 一致。每个版本在 `releases/` 下归档两个文件：`release-notes-vX.Y.md`（即 GitHub release 的说明）与 `one-site-one-bookmark-vX.Y.zip`（GitHub release 的附件）。zip 从 tag 打包，只含扩展运行所需文件：
+  ```
+  git archive --format=zip --prefix=one-site-one-bookmark/ -o releases/one-site-one-bookmark-vX.Y.zip vX.Y manifest.json css page script images/icon_16.png images/icon_32.png images/icon_64.png images/icon_128.png
+  ```
