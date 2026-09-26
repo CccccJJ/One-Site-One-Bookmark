@@ -1,0 +1,71 @@
+{
+  "ext_name": {
+    "message": "One Site One Bookmark"
+  },
+  "ext_description": {
+    "message": "每个网站只保留最新的一个书签，阅读进度不丢失。按网站开关，自动删除的书签 7 天内可恢复。"
+  },
+  "label_current_site": {
+    "message": "当前网站"
+  },
+  "unsupported_page": {
+    "message": "当前页面不支持"
+  },
+  "site_bookmark_count": {
+    "message": "本站已有 $COUNT$ 个收藏",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "confirm_enable_text": {
+    "message": "开启后，下次在本站收藏会删除现有的 $COUNT$ 个收藏（可在「最近删除」中恢复）",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "cancel": {
+    "message": "取消"
+  },
+  "confirm_enable": {
+    "message": "确认开启"
+  },
+  "recently_deleted": {
+    "message": "最近删除"
+  },
+  "clear": {
+    "message": "清空"
+  },
+  "confirm_clear": {
+    "message": "确认清空？"
+  },
+  "trash_empty": {
+    "message": "暂无删除记录（保留 7 天）"
+  },
+  "restore": {
+    "message": "恢复"
+  },
+  "discard_title": {
+    "message": "删除记录（不可恢复）"
+  },
+  "time_just_now": {
+    "message": "刚刚"
+  },
+  "time_minutes_ago": {
+    "message": "$N$ 分钟前",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "time_hours_ago": {
+    "message": "$N$ 小时前",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "time_days_ago": {
+    "message": "$N$ 天前",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  }
+}

@@ -21,13 +21,15 @@ const _TRASH_CLEAR = document.querySelector("#trash-clear");
 let clear_timer = null;
 
 (async function() {
+    localize_page()
+
     const hostname = await get_curr_tab_hostname()
 
     render_trash(hostname)
     bind_trash_action(hostname)
 
     if(!hostname) {
-        _HOSTNAME.textContent = "当前页面不支持"
+        _HOSTNAME.textContent = t("unsupported_page")
         page_disabled_state()
         return
     }
@@ -38,6 +40,17 @@ let clear_timer = null;
 
     bind_action(hostname)
 })()
+
+function t(key, substitutions) {
+    return chrome.i18n.getMessage(key, substitutions)
+}
+
+function localize_page() {
+    document.documentElement.lang = chrome.i18n.getUILanguage()
+    for(const el of document.querySelectorAll("[data-i18n]")) {
+        el.textContent = t(el.dataset.i18n)
+    }
+}
 
 async function get_curr_tab_hostname() {
     const [tab] = await chrome.tabs.query({active: true, currentWindow: true})
@@ -57,7 +70,7 @@ async function count_site_bookmarks(hostname) {
 }
 
 async function render_count(hostname) {
-    _COUNT.textContent = `本站已有 ${await count_site_bookmarks(hostname)} 个收藏`
+    _COUNT.textContent = t("site_bookmark_count", [String(await count_site_bookmarks(hostname))])
 }
 
 function bind_action(hostname) {
@@ -85,7 +98,7 @@ async function turn_state(hostname) {
 
     const count = await count_site_bookmarks(hostname)
     if(count > 1) {
-        _CONFIRM_TEXT.textContent = `开启后，下次在本站收藏会删除现有的 ${count} 个收藏（可在「最近删除」中恢复）`
+        _CONFIRM_TEXT.textContent = t("confirm_enable_text", [String(count)])
         _CONFIRM.hidden = false
         return
     }
@@ -125,12 +138,12 @@ async function render_trash(hostname) {
 
         const btn = document.createElement("button")
         btn.className = "btn-restore"
-        btn.textContent = "恢复"
+        btn.textContent = t("restore")
 
         const discard = document.createElement("button")
         discard.className = "btn-discard"
         discard.textContent = "×"
-        discard.title = "删除记录（不可恢复）"
+        discard.title = t("discard_title")
 
         btn.onclick = function() {
             btn.disabled = discard.disabled = true
@@ -156,7 +169,7 @@ function bind_trash_action(hostname) {
 
     _TRASH_CLEAR.onclick = function() {
         if(!clear_timer) {
-            _TRASH_CLEAR.textContent = "确认清空？"
+            _TRASH_CLEAR.textContent = t("confirm_clear")
             _TRASH_CLEAR.classList.add("danger")
             clear_timer = setTimeout(reset_clear_button, 3000)
             return
@@ -170,7 +183,7 @@ function bind_trash_action(hostname) {
 function reset_clear_button() {
     clearTimeout(clear_timer)
     clear_timer = null
-    _TRASH_CLEAR.textContent = "清空"
+    _TRASH_CLEAR.textContent = t("clear")
     _TRASH_CLEAR.classList.remove("danger")
 }
 
@@ -189,16 +202,16 @@ async function trash_action(message, hostname) {
 function format_time_ago(timestamp) {
     const minutes = Math.floor((Date.now() - timestamp) / 60000)
     if(minutes < 1) {
-        return "刚刚"
+        return t("time_just_now")
     }
     if(minutes < 60) {
-        return `${minutes} 分钟前`
+        return t("time_minutes_ago", [String(minutes)])
     }
     if(minutes < 60 * 24) {
-        return `${Math.floor(minutes / 60)} 小时前`
+        return t("time_hours_ago", [String(Math.floor(minutes / 60))])
     }
 
-    return `${Math.floor(minutes / 60 / 24)} 天前`
+    return t("time_days_ago", [String(Math.floor(minutes / 60 / 24))])
 }
 
 function page_on_state() {

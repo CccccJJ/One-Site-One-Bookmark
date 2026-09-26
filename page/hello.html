@@ -7,7 +7,7 @@
     <body>
         <div id="header">
             <div id="site">
-                <span class="label">当前网站</span>
+                <span class="label" data-i18n="label_current_site"></span>
                 <span id="hostname"></span>
                 <span id="count"></span>
             </div>
@@ -20,18 +20,18 @@
         <div id="confirm" hidden>
             <p id="confirm-text"></p>
             <div class="actions">
-                <button id="confirm-cancel" class="btn-secondary">取消</button>
-                <button id="confirm-ok" class="btn-primary">确认开启</button>
+                <button id="confirm-cancel" class="btn-secondary" data-i18n="cancel"></button>
+                <button id="confirm-ok" class="btn-primary" data-i18n="confirm_enable"></button>
             </div>
         </div>
 
         <div id="trash-section">
             <div id="trash-header">
-                <button id="trash-toggle"><span id="trash-arrow">▸</span>最近删除<span id="trash-count"></span></button>
-                <button id="trash-clear">清空</button>
+                <button id="trash-toggle"><span id="trash-arrow">▸</span><span data-i18n="recently_deleted"></span><span id="trash-count"></span></button>
+                <button id="trash-clear" data-i18n="clear"></button>
             </div>
             <div id="trash-body">
-                <p id="trash-empty">暂无删除记录（保留 7 天）</p>
+                <p id="trash-empty" data-i18n="trash_empty"></p>
                 <ul id="trash"></ul>
             </div>
         </div>

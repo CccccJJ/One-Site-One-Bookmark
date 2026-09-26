@@ -1,0 +1,71 @@
+{
+  "ext_name": {
+    "message": "One Site One Bookmark"
+  },
+  "ext_description": {
+    "message": "Keep only the newest bookmark on each site you choose, so you never lose your reading position. Undo within 7 days."
+  },
+  "label_current_site": {
+    "message": "Current site"
+  },
+  "unsupported_page": {
+    "message": "Not available on this page"
+  },
+  "site_bookmark_count": {
+    "message": "Bookmarks on this site: $COUNT$",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "confirm_enable_text": {
+    "message": "Once turned on, your next bookmark on this site will remove the $COUNT$ existing ones (you can restore them from \"Recently deleted\").",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "confirm_enable": {
+    "message": "Turn on"
+  },
+  "recently_deleted": {
+    "message": "Recently deleted"
+  },
+  "clear": {
+    "message": "Clear"
+  },
+  "confirm_clear": {
+    "message": "Clear all?"
+  },
+  "trash_empty": {
+    "message": "Nothing here (kept for 7 days)"
+  },
+  "restore": {
+    "message": "Restore"
+  },
+  "discard_title": {
+    "message": "Remove this record (cannot be undone)"
+  },
+  "time_just_now": {
+    "message": "just now"
+  },
+  "time_minutes_ago": {
+    "message": "$N$ min ago",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "time_hours_ago": {
+    "message": "$N$ h ago",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "time_days_ago": {
+    "message": "$N$ d ago",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  }
+}

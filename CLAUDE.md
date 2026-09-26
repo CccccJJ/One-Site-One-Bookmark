@@ -28,9 +28,10 @@ One Site One Bookmark：Chrome 扩展（Manifest V3），按网站开关；某�
 - **恢复**：service worker 先记下待恢复的 URL 再 `chrome.bookmarks.create`，对应的 `onCreated` 据此跳过；否则恢复出的书签会被当成最新书签，反而删掉当前书签。同一条目正在恢复时重复请求直接忽略。
 - `script/utils/site.js`：`is_site_enabled` / `enable_site` / `disable_site`。
 - `script/utils/bookmark.js`：`find_bookmarks_by_domain`（按 hostname 遍历书签树）与 `trash` 的读写。
+- **多语言**：`_locales/en`（`default_locale`）与 `_locales/zh_CN` 两套 `messages.json`，按浏览器语言自动选择。manifest 的 `name` / `description` 用 `__MSG_*__`；popup 静态文字写在 HTML 的 `data-i18n="key"` 上，由 `hello.js` 的 `localize_page()` 填充；动态文字用 `chrome.i18n.getMessage(key, [替换值])`。
 
 需要注意的现状：
-- 读取 `tab.url` 依赖 `host_permissions: *://*/*`，未申请 `tabs` / `activeTab`。
+- 读取当前 tab 的 `tab.url` 依赖 `activeTab`（用户点击扩展图标打开 popup 时临时授予），没有 `host_permissions`，安装时无网站权限警告。service worker 处理书签不需要网站权限。
 - hostname 精确匹配，`www.example.com` 与 `example.com` 视为不同网站。
 - popup 开/关样式通过切换 `css/hello.css` 中成对的 `btn-on*` / `btn-off*` class 实现。
 
@@ -40,7 +41,10 @@ One Site One Bookmark：Chrome 扩展（Manifest V3），按网站开关；某�
 - 新增文件需保持 ES module 形式（manifest 中 service worker 为 `"type": "module"`，popup 脚本用 `type="module"`）。
 - 修改 `manifest.json` 的 `permissions` / `host_permissions` 前先确认必要性。
 - 每完成一项功能或修复，在 `DEVLOG.md`「开发记录」最上方追加一节（背景、决策、改动、验证、对应提交），并同步更新「当前状态」与「待办 / 遗留」。
-- 发版：tag 名为 `vX.Y`，与 `manifest.json` 的 `version` 一致。每个版本在 `releases/` 下归档两个文件：`release-notes-vX.Y.md`（即 GitHub release 的说明）与 `one-site-one-bookmark-vX.Y.zip`（GitHub release 的附件）。zip 从 tag 打包，只含扩展运行所需文件：
+- 新增或修改界面文字时，`_locales/en` 与 `_locales/zh_CN` 必须同时加同名 key，不在 HTML / JS 里写死文字。
+- 发版：tag 名为 `vX.Y`，与 `manifest.json` 的 `version` 一致（每次上传商店的版本号必须比上次大）。每个版本在 `releases/` 下归档两个文件：`release-notes-vX.Y.md`（即 GitHub release 的说明）与 `one-site-one-bookmark-vX.Y.zip`（GitHub release 附件，也是上传 Chrome Web Store 的包）。zip 从 tag 打包，只含扩展运行所需文件，**`manifest.json` 必须在 zip 根目录**（商店要求，不加 `--prefix`）：
   ```
-  git archive --format=zip --prefix=one-site-one-bookmark/ -o releases/one-site-one-bookmark-vX.Y.zip vX.Y manifest.json css page script images/icon_16.png images/icon_32.png images/icon_64.png images/icon_128.png
+  git archive --format=zip -o releases/one-site-one-bookmark-vX.Y.zip vX.Y manifest.json _locales css page script images/icon_16.png images/icon_32.png images/icon_64.png images/icon_128.png
   ```
+  （`v1.0` 的 zip 带 `one-site-one-bookmark/` 外层目录，是改约定前的产物。）
+- 商店上架材料放在 `store/`：`store/README.md` 为后台填写指南（双语文案、隐私页答案、操作步骤），`store/images/` 为商店图标、截图、宣传图（文件名带语言后缀 `-en` / `-zh_CN`）。隐私政策为仓库根目录的 `PRIVACY.md`。
