@@ -16,16 +16,16 @@
 
 ## 2. 商品详情 / Store listing
 
-扩展支持 `en`（默认）与 `zh_CN`，页面顶部的语言下拉框中分别填写两种语言。
+扩展支持 `en`（默认）与 `zh_CN`，页面顶部的语言下拉框中分别填写两种语言。图片分「全球通用」与「按语言」两层：全球通用只放英文，中文素材放在「中文（简体）」语言下，不要把中英文一起放进全球通用（上限 5 张）。
 
 | 字段 | 填写 |
 | --- | --- |
 | 类别 / Category | 推荐「工具 / Tools」（若列表中有「工作流程与规划 / Workflow & Planning」也可），以后台选项为准 |
 | 语言 / Language | English（默认），另加 中文（简体） |
 | 商店图标 | `images/store-icon-128.png`（128×128，96×96 图形 + 16px 透明留边） |
-| 屏幕截图（en） | `images/screenshot-1-en.png`、`screenshot-2-en.png`、`screenshot-3-en.png`（1280×800） |
-| 屏幕截图（zh_CN） | `images/screenshot-1-zh_CN.png`、`screenshot-2-zh_CN.png`、`screenshot-3-zh_CN.png` |
-| 小型宣传图块 | `images/promo-small-en.png` / `images/promo-small-zh_CN.png`（440×280） |
+| 全球通用的屏幕截图（最多 5 张） | **只放英文 3 张**：`images/screenshot-1-en.png`、`screenshot-2-en.png`、`screenshot-3-en.png`（1280×800）。没有单独设置截图的语言都显示这组 |
+| 中文（简体）的屏幕截图 | 顶部语言下拉框切到「中文（简体）」后，在该语言下上传 `images/screenshot-1-zh_CN.png`、`screenshot-2-zh_CN.png`、`screenshot-3-zh_CN.png` |
+| 小型宣传图块（440×280） | 全球通用放 `images/promo-small-en.png`；「中文（简体）」下放 `images/promo-small-zh_CN.png` |
 | 首页网址 / Homepage URL | `https://github.com/CccccJJ/One-Site-One-Bookmark` |
 | 支持网址 / Support URL | `https://github.com/CccccJJ/One-Site-One-Bookmark/issues` |
 
