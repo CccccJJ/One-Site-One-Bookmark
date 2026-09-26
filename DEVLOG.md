@@ -23,6 +23,12 @@
 
 ## 开发记录
 
+### 2026-09-26 完善 README
+
+- **改动**：README 从只有标题补全为简介、popup 截图、功能、安装（Release zip 或 clone）、使用、注意事项（删除不可撤销、同步、hostname 精确匹配与同域多本书互相替换）、权限说明、开发入口。
+- 截图 `images/screenshot-popup.png` 由本地预览（模拟 `chrome` API + headless Chrome）生成，使用虚构数据。
+- 权限说明中「不读取网页内容、不发送网络请求」已核对：代码中无 `fetch` / `XMLHttpRequest` / content script。
+
 ### 2026-09-26 最近删除：折叠、删除单条、清空、7 天过期、删除时间（`9b370fc`）
 
 - **背景**：「最近删除」一直显示、无法删除或清空；打开 popup 就能看到删过的书签标题，有隐私问题。
