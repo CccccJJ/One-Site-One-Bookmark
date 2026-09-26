@@ -4,7 +4,7 @@
 
 一个 Chrome 扩展（Manifest V3）：对你开启的网站，每次新建书签时自动删除该网站下的其他旧书签，**同一个网站只保留最新的一个书签**。适合在小说站、文档站等地方记录阅读进度，不用再手动清理一串过期的书签。
 
-<img src="images/screenshot-popup.png" alt="popup 截图" width="320">
+<img src="assets/screenshot-popup.png" alt="popup 截图" width="320">
 
 ## 功能
 
@@ -23,7 +23,7 @@
    - 在 [Releases](https://github.com/CccccJJ/One-Site-One-Bookmark/releases)（或仓库的 [`releases/`](releases/) 目录）下载最新的 `one-site-one-bookmark-*.zip` 并解压；
    - 或 `git clone https://github.com/CccccJJ/One-Site-One-Bookmark.git`。
 2. 打开 `chrome://extensions`，开启右上角「开发者模式」。
-3. 点击「加载已解压的扩展程序」，选择解压后的目录（或仓库根目录）。
+3. 点击「加载已解压的扩展程序」，选择解压后的目录（clone 的话选仓库里的 `extension/` 目录）。
 
 ## 使用
 
@@ -52,9 +52,10 @@
 
 ## 开发
 
-纯原生 HTML / CSS / JavaScript（ES modules），无构建步骤。修改代码后在 `chrome://extensions` 点击扩展卡片上的刷新即可。
+纯原生 HTML / CSS / JavaScript（ES modules），无构建步骤。扩展本体在 [`extension/`](extension/)，修改代码后在 `chrome://extensions` 点击扩展卡片上的刷新即可。
 
-- 架构与约定：[`CLAUDE.md`](CLAUDE.md)
+- 目录结构、架构与约定：[`CLAUDE.md`](CLAUDE.md)
+- 验证与素材生成脚本：[`tools/`](tools/)
 - 开发历史、设计决策与待办：[`DEVLOG.md`](DEVLOG.md)
 - 各版本发布说明与安装包：[`releases/`](releases/)
 - Chrome Web Store 上架材料与后台填写指南：[`store/`](store/)

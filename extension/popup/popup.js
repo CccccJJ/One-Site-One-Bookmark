@@ -1,5 +1,5 @@
-import {is_site_enabled, enable_site, disable_site} from './utils/site.js'
-import {find_bookmarks_by_domain, get_trash} from './utils/bookmark.js'
+import {is_site_enabled, enable_site, disable_site} from '../utils/site.js'
+import {find_bookmarks_by_domain, get_trash} from '../utils/bookmark.js'
 
 const _BTN = document.querySelector("#btn");
 const _CIRCLE = document.querySelector("#btn-circle");

@@ -1,5 +1,5 @@
-import {is_site_enabled} from './utils/site.js'
-import {find_bookmarks_by_domain, get_trash, add_to_trash, remove_from_trash, clear_trash} from './utils/bookmark.js'
+import {is_site_enabled} from '../utils/site.js'
+import {find_bookmarks_by_domain, get_trash, add_to_trash, remove_from_trash, clear_trash} from '../utils/bookmark.js'
 
 let importing = false;
 

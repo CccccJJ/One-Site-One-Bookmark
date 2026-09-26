@@ -1,0 +1,87 @@
+<!doctype html>
+<!-- Chrome Web Store asset template, rendered by tools/render-store-images.sh.
+     ?kind=shot&n=1|2|3&lang=en|zh_CN  → 1280x800 screenshot (embeds the real popup via popup-preview.html)
+     ?kind=promo&lang=en|zh_CN          → 440x280 small promo tile
+     ?kind=icon                         → 128x128 store icon (96x96 artwork + 16px transparent padding) -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: system-ui, -apple-system, "PingFang SC", "Helvetica Neue", sans-serif; background: transparent; overflow: hidden; }
+    .bg { background: linear-gradient(135deg, #1b5e98 0%, #22809f 55%, #2fa39a 100%); color: #fff; }
+
+    /* 1280x800 screenshot */
+    .shot { width: 1280px; height: 800px; display: flex; align-items: center; gap: 72px; padding: 0 96px; }
+    .shot .text { flex: 1; }
+    .shot h1 { font-size: 52px; line-height: 1.25; font-weight: 700; letter-spacing: .5px; }
+    .shot p { margin-top: 24px; font-size: 26px; line-height: 1.6; opacity: .88; }
+    .shot .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; font-size: 22px; font-weight: 600; opacity: .95; }
+    .shot .brand img { width: 44px; height: 44px; border-radius: 10px; }
+    .popup { width: 512px; flex-shrink: 0; background: #fff; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,.28); overflow: hidden; }
+    .popup iframe { width: 320px; border: 0; transform: scale(1.6); transform-origin: 0 0; display: block; }
+
+    /* 440x280 small promo tile */
+    .promo { width: 440px; height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 28px; }
+    .promo img { width: 88px; height: 88px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+    .promo h1 { margin-top: 18px; font-size: 28px; font-weight: 700; }
+    .promo p { margin-top: 8px; font-size: 17px; opacity: .9; }
+
+    /* 128x128 store icon: 96x96 artwork + 16px transparent padding */
+    .icon { width: 128px; height: 128px; padding: 16px; }
+    .icon img { width: 96px; height: 96px; border-radius: 22px; display: block; }
+</style>
+</head>
+<body>
+<script>
+const q = new URLSearchParams(location.search);
+const kind = q.get("kind"), lang = q.get("lang") || "en", n = q.get("n");
+const copy = {
+    en: {
+        tagline: "Keep only the newest bookmark on each site",
+        shots: {
+            1: ["Keep only the newest bookmark per site", "Turn it on just for the sites you choose. Your reading position is always the latest bookmark."],
+            2: ["Confirm before it takes over", "See how many bookmarks a site already has, so nothing you collected disappears by surprise."],
+            3: ["Removed by mistake? Restore it", "Removed bookmarks stay in Recently deleted for 7 days and go back to their original folder."],
+        },
+    },
+    zh_CN: {
+        tagline: "每个网站只保留最新的一个书签",
+        shots: {
+            1: ["每个网站只保留最新的书签", "按网站开关，只作用于你选定的网站。阅读进度永远是最新的那个书签。"],
+            2: ["开启前先确认", "显示本站已有多少个收藏，积攒的书签不会被悄悄清掉。"],
+            3: ["删错了？一键恢复", "被删除的书签保留在「最近删除」7 天，恢复到原文件夹、原位置。"],
+        },
+    },
+}[lang];
+const modes = { 1: ["on", 128], 2: ["confirm", 300], 3: ["hover", 300] };
+const icon = "../../assets/icon-original.png";
+
+if (kind === "icon") {
+    document.body.innerHTML = `<div class="icon"><img src="${icon}"></div>`;
+} else if (kind === "promo") {
+    document.body.innerHTML = `<div class="promo bg"><img src="${icon}"><h1>One Site One Bookmark</h1><p>${copy.tagline}</p></div>`;
+} else {
+    const [title, desc] = copy.shots[n];
+    const [mode, h] = modes[n];
+    document.body.innerHTML = `
+        <div class="shot bg">
+            <div class="text">
+                <div class="brand"><img src="${icon}">One Site One Bookmark</div>
+                <h1>${title}</h1>
+                <p>${desc}</p>
+            </div>
+            <div class="popup" style="height:${h * 1.6}px"><iframe src="popup-preview.html?mode=${mode}&lang=${lang}" style="height:${h}px"></iframe></div>
+        </div>`;
+    // fit the card to the popup's real content height once it has rendered
+    const iframe = document.querySelector("iframe");
+    window.addEventListener("message", e => {
+        const content_h = e.data?.popup_height;
+        if (!content_h) return;
+        iframe.style.height = content_h + "px";
+        iframe.parentElement.style.height = content_h * 1.6 + "px";
+    });
+}
+</script>
+</body>
+</html>

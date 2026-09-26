@@ -9,15 +9,17 @@
 - **最近删除管理**：默认折叠；显示删除时间；可删除单条、两步确认清空。
 - **权限与语言**：`bookmarks` / `storage` / `activeTab`，无网站权限；界面中英双语（默认英文）。
 - **上架材料**：`store/`（后台填写指南 + 图片）、`PRIVACY.md`。
-- **验证方式**：`node --check` + 模拟 `chrome` API 的 node 测试（21 项）+ 多语言检查脚本 + headless Chrome 截图预览 popup；真实 Chrome 由 cc 手动验证。
+- **目录**：扩展本体在 `extension/`（Chrome 加载此目录）；项目文件、上架材料、版本归档、验证脚本分别在根目录、`store/`、`releases/`、`tools/`，约定见 CLAUDE.md「目录结构」。
+- **验证方式**：`node --check` + `node tools/test-service-worker.mjs`（模拟 `chrome` API，21 项）+ `node tools/check-i18n.mjs` + `bash tools/render-store-images.sh`（headless Chrome 生成截图）；真实 Chrome 由 cc 手动验证。
 
 ## 待办 / 遗留
 
 - [ ] **提交 Chrome Web Store 审核（cc 本人）**：按 `store/README.md` 操作；上架后在 README「安装」补商店链接。
 - [ ] **v1.1 在真实 Chrome 中确认**：`activeTab` 下 popup 仍能识别网站；中文 / 英文浏览器下界面文字正确。
-- [ ] **测试、预览与素材生成脚本不在仓库里**：模拟测试 `sw_test2.mjs`、多语言检查 `i18n_check.mjs`、popup 预览与商店素材模板 `preview/`（`stub.js`、`page/store.html`）、截图脚本 `shoot.sh` / `render_store.sh` 都在后台任务的临时目录 `~/.claude/jobs/de96e5bc/tmp/`，任务删除后会一起消失；以后更新商店截图需要重建。需要决定是否移入仓库（如 `tools/`，需先在 CLAUDE.md 定目录约定）。
-- [ ] `page/hello.html` 缺少 `<!doctype html>`，popup 以 quirks mode 渲染（目前无可见问题；生成商店截图时因此改用内容底边计算高度）。
-- [ ] **`.claude/settings.json` 未生效**：后台会话（从 `claude agents` 启动）默认只能在 worktree 里改，改完需合并回主目录 Chrome 才加载得到。写入 `{"worktree": {"bgIsolation": "none"}}` 可关闭（CLAUDE.md「开发与验证」已写明两种情况的做法）。
+- [x] **目录整理后在 Chrome 重新加载**（2026-09-26，cc 已确认正常）：移除旧扩展（仓库根目录），改为加载 `extension/`；本机的开关设置与「最近删除」随之清空（未打包扩展的身份与目录绑定）。
+- [x] **测试、预览与素材生成脚本移入仓库 `tools/`**（2026-09-26）。
+- [ ] `extension/popup/popup.html` 缺少 `<!doctype html>`，popup 以 quirks mode 渲染（目前无可见问题；`tools/preview/stub.js` 因此用内容底边计算高度）。
+- [x] **后台会话不再使用 worktree**（2026-09-26）：没有并行开发，cc 在本地写入 `.claude/settings.json` 的 `{"worktree": {"bgIsolation": "none"}}`（`.claude/` 被 git 忽略，只对本机生效），后台会话直接改主目录。以后若恢复并行开发，删掉这项设置即可（CLAUDE.md「开发与验证」已写明两种情况的做法）。
 - [ ] 深色模式（暂缓）。
 - [ ] 最新一版 popup（折叠 / 单条删除 / 清空确认）尚未在真实 Chrome 中确认。
 - 已知限制（暂不处理）：
@@ -27,6 +29,20 @@
 - 已决定不做：按「书」（URL 路径前缀）细化粒度——各站 URL 结构不同，需要逐站配置规则，属于产品层面的大改动。
 
 ## 开发记录
+
+### 2026-09-26 整理目录结构
+
+- **背景**：扩展代码与项目文件混在根目录，Chrome 加载根目录时连 `releases/` 的 zip、`store/` 的商店图片、1 MB 的图标原图一起加载；`images/` 混放扩展图标、设计原图与 README 截图；popup 文件沿用早期的 `hello.*` 命名，且按类型拆在 `page/` / `script/` / `css/`。
+- **决策**：方案 A——扩展本体移入 `extension/`，Chrome 只加载它；不进扩展包的图片放 `assets/`；`PRIVACY.md` 保持原位（商店隐私网址指向它）；同时把原先只在后台任务临时目录里的验证与素材脚本移进 `tools/`。代价：Chrome 需重新加载 `extension/`，本机开关与「最近删除」清空。
+- **改动**：
+  - `git mv`（保留历史）：`manifest.json`、`_locales/` → `extension/`；`images/icon_*.png` → `extension/icons/`；`page/hello.html`、`css/hello.css`、`script/hello.js` → `extension/popup/popup.*`；`script/service-worker.js` → `extension/background/`；`script/utils/` → `extension/utils/`；`images/original.png` → `assets/icon-original.png`；`images/screenshot-popup.png` → `assets/`。
+  - 修正 manifest 路径、popup 页面引用、两处 import（`../utils/`）、README 截图与安装说明。
+  - `tools/`：`test-service-worker.mjs`、`check-i18n.mjs`、`check-png-alpha.mjs`（自动定位 `extension/`，不再需要传参）；`preview/stub.js`、`preview/store.html`、`preview/shoot.sh`；`render-store-images.sh` 一条命令重新生成 `store/images/` 与 `assets/screenshot-popup.png`。生成的 `tools/preview/popup-preview.html` 加入 `.gitignore`。
+  - CLAUDE.md 新增「目录结构」约定，打包命令改为 `git archive ... vX.Y:extension`。
+- **验证**：
+  - 全部 JS / shell 脚本语法检查通过；`check-i18n` 9 项、`test-service-worker` 21 项通过。
+  - 用 `tools/render-store-images.sh` 重新生成的 10 张图与整理前逐字节一致（同时证明脚本迁移正确、移动后的 popup 渲染结果不变）。
+  - 从暂存区打包 `extension/`：`manifest.json` 在 zip 根目录，共 20 个条目；manifest、popup 页面、import 引用的 12 个路径全部存在。
 
 ### 2026-09-26 v1.1：为上架 Chrome Web Store 做准备
 
