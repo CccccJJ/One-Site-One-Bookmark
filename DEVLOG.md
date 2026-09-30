@@ -2,19 +2,28 @@
 
 记录每次功能/修复的背景、决策、改动与验证。**新记录追加在「开发记录」最上方**（时间倒序），每节标注对应提交。
 
-## 当前状态（2026-09-26，`v1.1`，准备上架 Chrome Web Store）
+## 当前状态（2026-09-29，`v1.2` 待上传；商店线上为 `v1.1`）
 
-- **核心**：按网站开关。某网站开启后，在该网站新建书签会删除同一 hostname 下的其他书签，只留最新一个。
+- **核心**：按网站开关。某网站开启后，在该网站新建书签会删除同一 hostname 下的其他书签，只留 `dateAdded` 最新的一个。
+- **跨设备**：网站开关存 `chrome.storage.sync`（每站一个 key `site:<hostname>`），登录 Chrome 并开启同步时随账号同步，未登录时只在本机；「最近删除」始终只在本机。
 - **保护**：开启前显示本站收藏数，多于 1 个需确认；删除的书签进入「最近删除」（最多 50 条、保留 7 天），可恢复到原文件夹原位置；导入书签期间不处理。
 - **最近删除管理**：默认折叠；显示删除时间；可删除单条、两步确认清空。
 - **权限与语言**：`bookmarks` / `storage` / `activeTab`，无网站权限；界面中英双语（默认英文）。
 - **上架材料**：`store/`（后台填写指南 + 图片）、`PRIVACY.md`。
 - **目录**：扩展本体在 `extension/`（Chrome 加载此目录）；项目文件、上架材料、版本归档、验证脚本分别在根目录、`store/`、`releases/`、`tools/`，约定见 CLAUDE.md「目录结构」。
-- **验证方式**：`node --check` + `node tools/test-service-worker.mjs`（模拟 `chrome` API，21 项）+ `node tools/check-i18n.mjs` + `bash tools/render-store-images.sh`（headless Chrome 生成截图）；真实 Chrome 由 cc 手动验证。
+- **验证方式**：`node --check` + `node tools/test-service-worker.mjs`（模拟 `chrome` API，26 项）+ `node tools/check-i18n.mjs` + `bash tools/render-store-images.sh`（headless Chrome 生成截图）；真实 Chrome 由 cc 手动验证。
 
 ## 待办 / 遗留
 
-- [ ] **提交 Chrome Web Store 审核（cc 本人）**：按 `store/README.md` 操作；上架后在 README「安装」补商店链接。
+- [x] **提交 Chrome Web Store 审核**：v1.1 已上架（cc 确认）。
+- [x] **README「安装」补商店链接**（2026-09-30）：<https://chromewebstore.google.com/detail/noaffgbcimbfjjileehklfkhpkeeblhf>（线上 v1.1）。
+- [ ] **上传 v1.2 到商店（cc 本人）**：按 `store/README.md`「更新版本」操作；隐私政策与 `storage` 权限理由已按同步改写，提交前确认后台文案一致。
+- [ ] **v1.2 手动实测**（结果记入本文件与 README）：
+  - 未登录的 Chrome 用户资料中加载 `extension/`：开启网站 → 重启浏览器后仍为 ON，删除 / 恢复正常；
+  - 未登录时开启网站 A → 登录并开启同步：A 是否保留、是否与账号中已开启的网站合并（官方文档未说明）；
+  - 退出登录：本机开关是否保留（官方文档未说明）；
+  - 商店版 v1.2 上线后两台电脑互测：一台开启 → 另一台 popup 显示 ON；任一台收藏新页面后两台都只剩最新书签。
+  - Chrome 同步设置里控制扩展数据的是哪一项，核对后写入 README。
 - [ ] **v1.1 在真实 Chrome 中确认**：`activeTab` 下 popup 仍能识别网站；中文 / 英文浏览器下界面文字正确。
 - [x] **目录整理后在 Chrome 重新加载**（2026-09-26，cc 已确认正常）：移除旧扩展（仓库根目录），改为加载 `extension/`；本机的开关设置与「最近删除」随之清空（未打包扩展的身份与目录绑定）。
 - [x] **测试、预览与素材生成脚本移入仓库 `tools/`**（2026-09-26）。
@@ -29,6 +38,23 @@
 - 已决定不做：按「书」（URL 路径前缀）细化粒度——各站 URL 结构不同，需要逐站配置规则，属于产品层面的大改动。
 
 ## 开发记录
+
+### 2026-09-29 v1.2：网站开关跨电脑同步
+
+- **背景**：cc 在家和公司两台电脑用同一账号登录 Chrome、都装商店版（扩展 ID 一致），但开关存在 `storage.local`，不同步。
+- **依据（官方文档 `chrome.storage`）**：sync 配额 100 KB / 单项 8 KB / 512 项 / 每分钟 120 次写；同步关闭时 "it behaves like `storage.local`"；离线时先存本机、联网后同步。另据 Chromium 扩展组讨论，从其他设备同步来的书签同样触发 `bookmarks.onCreated`。
+- **决策**：
+  - 只同步网站开关；「最近删除」保留本机（书签 / 文件夹 ID 是本机的）。
+  - 每个网站一个 key `site:<hostname>`，而不是单个对象：多设备各自「读-改-写」同一对象会互相覆盖。
+  - 不迁移旧数据（cc 选择重新开启），升级时清除本机旧 key `enabled_sites`。
+  - 未登录用户无需特殊处理（同一代码路径，数据留在本机）；不在界面显示同步状态（没有可靠 API，且需新增权限）。
+  - 「保留最新」改为按 `dateAdded`：开关同步后两台电脑都会处理同一个同步来的书签，到达顺序可能与收藏顺序不同，按时间判断使两台结果一致。
+- **改动**：`extension/utils/site.js`（改用 `storage.sync`）、`extension/background/service-worker.js`（按 `dateAdded` 保留最新；`onInstalled` 清除 `enabled_sites`）、`manifest.json` 1.2；`tools/test-service-worker.mjs`（sync 区域、`dateAdded`、新增 5 项）、`tools/preview/stub.js`；`PRIVACY.md`、`store/README.md`、`README.md`、`CLAUDE.md`。
+- **验证**：
+  - 旧测试在新代码上先失败（缺 `storage.sync`），证明测试覆盖到该路径；更新后 26 项全部通过。
+  - 把新用例跑在「保留触发事件的书签」的旧逻辑上：「较晚到达的旧书签不应删掉较新的」两项失败（旧逻辑留下了旧书签），新逻辑通过——证明该用例确实防住这个问题。
+  - `check-i18n` 9 项通过；重新生成的 10 张商店 / README 图片与之前逐字节一致（popup 读取开关已走 sync，界面不变）。
+  - 真实 Chrome 与跨设备验证见待办。
 
 ### 2026-09-26 整理目录结构
 

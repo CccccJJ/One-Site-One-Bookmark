@@ -35,10 +35,17 @@ if (lang === "en") {
 window.chrome = {
     i18n: { getMessage: get_message, getUILanguage: () => lang.replace("_", "-") },
     tabs: { query: async () => [{ url: mode === "disabled" ? "chrome://newtab/" : `https://${host}/book/123/13.html` }] },
-    storage: { local: {
-        get: async k => k === "enabled_sites" ? { enabled_sites: enabled ? { [host]: 1 } : {} } : k === "trash" ? { trash } : {},
-        set: async () => {},
-    }},
+    storage: {
+        local: {
+            get: async k => k === "trash" ? { trash } : {},
+            set: async () => {},
+        },
+        sync: {
+            get: async k => k === `site:${host}` && enabled ? { [k]: 1 } : {},
+            set: async () => {},
+            remove: async () => {},
+        },
+    },
     bookmarks: { getTree: async () => [{ id: "0", children: [{ id: "1", children: bookmarks }] }] },
     runtime: { sendMessage: async m => {
         if (m.type === "clear") trash = [];

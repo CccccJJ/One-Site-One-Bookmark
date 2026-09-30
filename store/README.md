@@ -11,7 +11,8 @@
 
 ## 1. 上传包
 
-- 「新建内容 / New item」→ 上传 `releases/one-site-one-bookmark-v1.1.zip`（`manifest.json` 在 zip 根目录）。
+- 首次上架：「新建内容 / New item」→ 上传 `releases/` 下最新版本的 `one-site-one-bookmark-vX.Y.zip`（`manifest.json` 在 zip 根目录）。
+- 更新版本：在已上架的内容里进入「文件包 / Package」上传新版本 zip（版本号必须大于线上版本），再按下文检查文案与隐私页是否需要同步修改，然后提交审核。
 - 名称与简短说明来自 `manifest.json`（`_locales` 中的 `ext_name` / `ext_description`），无需另填。
 
 ## 2. 商品详情 / Store listing
@@ -44,7 +45,10 @@ BUILT-IN SAFETY
 • Bookmark imports are never touched.
 
 PRIVACY
-Everything runs locally in your browser. No data is collected or sent anywhere, and no network requests are made. The extension only reads the current tab's address when you click its icon (activeTab).
+Everything runs in your browser. The developer collects nothing, and the extension makes no network requests. The extension only reads the current tab's address when you click its icon (activeTab).
+
+SYNC ACROSS COMPUTERS
+Signed in to Chrome with sync on? The sites you turned on follow your Google account to your other computers (synced by Chrome). Not signed in? Everything works the same, just on this computer only.
 
 NOTES
 • A "site" means an exact hostname: www.example.com and example.com are different sites, and different books on the same site count as one site.
@@ -68,7 +72,10 @@ One Site One Bookmark 让你开启的网站只保留最新的一个书签，适�
 • 导入书签期间不做任何删除。
 
 隐私
-完全在浏览器本地运行，不收集、不上传任何数据，不发出任何网络请求。只在你点击扩展图标时读取当前标签页的网址（activeTab）。
+完全在浏览器内运行，开发者不收集任何数据，扩展不发出任何网络请求。只在你点击扩展图标时读取当前标签页的网址（activeTab）。
+
+多台电脑同步
+登录 Chrome 并开启同步时，你开启的网站会随 Google 账号同步到你的其他电脑（由 Chrome 同步）；未登录也能完整使用，只是只在本机生效。
 
 注意
 • 「同一网站」按域名精确判断：www.example.com 与 example.com 视为不同网站；同一域名下的不同书视为同一网站。
@@ -90,7 +97,7 @@ Keep only the newest bookmark on each website the user turns on, so the user's r
 | 权限 | 填写 |
 | --- | --- |
 | `bookmarks` | `Core function: count the bookmarks on the current site, remove the older bookmarks on sites the user turned on when a new bookmark is created, and restore removed bookmarks when the user asks.` |
-| `storage` | `Stores, on the user's device only, the list of sites the user turned on and the "Recently deleted" records (max 50, auto-removed after 7 days) used for restoring.` |
+| `storage` | `Stores the list of sites the user turned on in chrome.storage.sync (synced by Chrome across the user's signed-in browsers; stays on the device when not signed in), and the "Recently deleted" records (max 50, auto-removed after 7 days) in chrome.storage.local on the device only, used for restoring.` |
 | `activeTab` | `When the user clicks the toolbar icon, reads the current tab's URL to know which site the on/off switch applies to. No page content is read.` |
 
 ### 远程代码 / Remote code

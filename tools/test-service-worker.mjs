@@ -1,7 +1,9 @@
 // In-memory chrome.* stub; exercises service-worker.js trash / restore / import guard.
 // Usage (from repo root): node tools/test-service-worker.mjs   → exit 0 when every check passes.
-const store = {};
+const store = {};       // chrome.storage.local
+const sync_store = {};  // chrome.storage.sync
 const L = {};
+let clock = 1000;       // dateAdded source: every new bookmark is newer than the previous one
 const errors = [];
 process.on("unhandledRejection", e => errors.push(String(e)));
 
@@ -14,20 +16,24 @@ function all_nodes(n = root, out = []) { out.push(n); (n.children || []).forEach
 function find(id) { return all_nodes().find(n => n.id === id); }
 function reindex(p) { p.children.forEach((c, i) => (c.index = i)); }
 function mkfolder(parentId, title) { const p = find(parentId); const f = { id: String(next_id++), title, parentId, children: [] }; p.children.push(f); reindex(p); return f; }
-function mkbm(parentId, url, title = url) {
+function mkbm(parentId, url, title = url, dateAdded = ++clock) {
     const p = find(parentId);
-    const bm = { id: String(next_id++), parentId, url, title };
+    const bm = { id: String(next_id++), parentId, url, title, dateAdded };
     p.children.push(bm); reindex(p);
     L.created(bm.id, { ...bm });
     return bm;
 }
 
+function area(data) {
+    return {
+        get: async k => (k in data ? { [k]: structuredClone(data[k]) } : {}),
+        set: async o => Object.assign(data, structuredClone(o)),
+        remove: async k => { [].concat(k).forEach(key => delete data[key]); },
+    };
+}
+
 globalThis.chrome = {
-    storage: { local: {
-        get: async k => (k in store ? { [k]: structuredClone(store[k]) } : {}),
-        set: async o => Object.assign(store, structuredClone(o)),
-        remove: async k => { delete store[k]; },
-    }},
+    storage: { local: area(store), sync: area(sync_store) },
     bookmarks: {
         onCreated: { addListener: f => (L.created = f) },
         onImportBegan: { addListener: f => (L.importBegan = f) },
@@ -38,7 +44,7 @@ globalThis.chrome = {
         create: async ({ parentId = "2", index, title, url }) => {
             const p = find(parentId); if (!p) throw new Error("no parent");
             if (index !== undefined && index > p.children.length) throw new Error("Index out of bounds.");
-            const bm = { id: String(next_id++), parentId, url, title };
+            const bm = { id: String(next_id++), parentId, url, title, dateAdded: ++clock };
             p.children.splice(index ?? p.children.length, 0, bm); reindex(p);
             L.created(bm.id, { ...bm });
             return bm;
@@ -155,6 +161,29 @@ await p1; await tick(); await tick();
 const ids = (await bmu.get_trash()).map(t => t.url).sort();
 check("race: discarded gone, all deleted bookmarks recorded",
     !ids.includes("https://x.com/k") && before.every(u => ids.includes(u)) && ids.length === before.length);
+
+// 15. switches live in storage.sync, one key per site; nothing in local
+check("enabled switches stored as sync keys site:<host>",
+    "site:x.com" in sync_store && !("enabled_sites" in store) && !Object.keys(store).some(k => k.startsWith("site:")));
+await site.enable_site("z.com");
+await site.disable_site("z.com");
+check("disable removes only that site key", !("site:z.com" in sync_store) && "site:x.com" in sync_store);
+
+// 16. an older bookmark arriving late (e.g. via bookmark sync) must not delete the newer one
+await site.enable_site("z.com");
+mkbm("1", "https://z.com/newer"); await tick();
+mkbm("1", "https://z.com/older-synced", "older", 1); await tick();
+const zs = bmu.find_bookmarks_by_domain([root], "z.com").map(n => n.url).join(",");
+console.log("   z.com now:", zs);
+check("late older bookmark removed, newer kept", zs === "https://z.com/newer");
+check("removed late bookmark is restorable from trash", (await bmu.get_trash()).some(t => t.url === "https://z.com/older-synced"));
+
+// 17. onInstalled clears legacy local keys, keeps sync switches
+store.enabled_sites = { "x.com": "old" };
+store.recorded_datetime = "old";
+L.installed(); await tick();
+check("onInstalled removes local enabled_sites + recorded_datetime",
+    !("enabled_sites" in store) && !("recorded_datetime" in store) && "site:x.com" in sync_store);
 
 check("no unhandled errors", errors.length === 0);
 if (errors.length) console.log(errors);

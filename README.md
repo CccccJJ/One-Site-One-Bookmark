@@ -17,7 +17,9 @@
 
 ## 安装
 
-即将上架 Chrome 应用商店（上架后在此补充链接）。在此之前以「开发者模式」加载：
+**推荐**：从 [Chrome 应用商店](https://chromewebstore.google.com/detail/noaffgbcimbfjjileehklfkhpkeeblhf) 安装，自动更新。
+
+也可以以「开发者模式」手动加载：
 
 1. 获取代码（二选一）：
    - 在 [Releases](https://github.com/CccccJJ/One-Site-One-Bookmark/releases)（或仓库的 [`releases/`](releases/) 目录）下载最新的 `one-site-one-bookmark-*.zip` 并解压；
@@ -33,6 +35,7 @@
 
 ## 注意事项
 
+- **多台电脑同步**：登录 Chrome 并开启同步时，开启了哪些网站会随 Google 账号同步到你的其他电脑；未登录或未开启同步时只保存在本机，功能不受影响。「最近删除」始终只保存在本机。
 - **书签删除本身不可撤销**，「最近删除」是唯一的恢复途径，记录保留 7 天、最多 50 条，且只保存在本机。
 - 开启了 Chrome 书签同步时，删除会同步到你的其他设备。
 - 「同一网站」按域名（hostname）精确判断：

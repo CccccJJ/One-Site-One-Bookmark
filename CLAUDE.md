@@ -46,13 +46,16 @@ README.md / DEVLOG.md / CLAUDE.md
 
 ## 架构
 
-两个运行上下文，通过 `chrome.storage.local` 共享状态：`enabled_sites`（`{ [hostname]: 开启时间 }`）记录各网站开关，`trash`（最近删除的书签，最多 50 条，新的在前，超过 7 天的记录读取时过滤、下次写入时清除）用于恢复。以下路径均相对 `extension/`。
+两个运行上下文，通过 `chrome.storage` 共享状态。以下路径均相对 `extension/`。
+
+- **网站开关在 `chrome.storage.sync`**，每个网站一个 key：`site:<hostname>` → 开启时间。登录 Chrome 并开启扩展同步时随账号在各设备间同步；未登录或未开同步时 sync 区域等同本机存储（官方："behaves like `storage.local`"），代码不区分两种情况。**不要改回单个对象存所有网站**：多台设备各自「读-改-写」同一对象会互相覆盖。sync 配额：最多 512 项、每项 8 KB、每分钟 120 次写。
+- **「最近删除」`trash` 在 `chrome.storage.local`，只属于本机**（记录的书签 / 文件夹 ID 是本机的，跨设备不通用）：最多 50 条，新的在前，超过 7 天的记录读取时过滤、下次写入时清除。
 
 - `popup/`：popup UI，显示当前 tab 的 hostname 与本站收藏数；开启时若本站已有多于 1 个收藏，先在 popup 内确认再开启；「最近删除」默认折叠，展开后可恢复、删除单条（丢弃记录）、两步确认清空全部。非 http(s) 页面开关置灰不可点。
-- `background/service-worker.js`：后台监听 `chrome.bookmarks.onCreated`，以**新书签自身的 hostname** 判断是否开启（不看当前 tab），开启时删除除新书签以外的同域书签，删除前写入 `trash`。书签导入期间（`onImportBegan` ~ `onImportEnded`）不处理。`onInstalled` 时清除旧版全局开关 key `recorded_datetime`。
+- `background/service-worker.js`：后台监听 `chrome.bookmarks.onCreated`，以**新书签自身的 hostname** 判断是否开启（不看当前 tab），开启时**保留同域书签中 `dateAdded` 最新的一个**（并列保留触发事件的书签），删除其余，删除前写入 `trash`。按时间而不是「触发事件的那个」判断，是因为从其他设备同步来的书签也会触发 `onCreated`，到达顺序不一定是收藏顺序；这样各设备处理结果一致。书签导入期间（`onImportBegan` ~ `onImportEnded`）不处理。`onInstalled` 时清除本机旧版 key `recorded_datetime`、`enabled_sites`。
 - **`trash` 的所有写操作只在 service worker 内、经 `with_trash_lock` 串行执行**：popup 只读 `trash`，写操作通过 `chrome.runtime.sendMessage` 发 `{type: "restore" | "discard", id}` 或 `{type: "clear"}`。否则 popup 与 service worker 并发「读-改-写」会互相覆盖、丢记录。
 - **恢复**：service worker 先记下待恢复的 URL 再 `chrome.bookmarks.create`，对应的 `onCreated` 据此跳过；否则恢复出的书签会被当成最新书签，反而删掉当前书签。同一条目正在恢复时重复请求直接忽略。
-- `utils/site.js`：`is_site_enabled` / `enable_site` / `disable_site`。
+- `utils/site.js`：`is_site_enabled` / `enable_site` / `disable_site`（读写 sync 中的 `site:<hostname>`）。
 - `utils/bookmark.js`：`find_bookmarks_by_domain`（按 hostname 遍历书签树）与 `trash` 的读写。
 - **多语言**：`_locales/en`（`default_locale`）与 `_locales/zh_CN` 两套 `messages.json`，按浏览器语言自动选择。manifest 的 `name` / `description` 用 `__MSG_*__`；popup 静态文字写在 HTML 的 `data-i18n="key"` 上，由 `popup.js` 的 `localize_page()` 填充；动态文字用 `chrome.i18n.getMessage(key, [替换值])`。
 

@@ -37,8 +37,14 @@ async function process_new_bookmark(bookmark) {
 
     const existBookmarks = find_bookmarks_by_domain(tree, domain);
 
+    // 其他设备同步来的书签也会触发 onCreated, 到达顺序不一定是收藏顺序:
+    // 保留 dateAdded 最新的一个(并列时保留触发事件的书签), 各设备处理结果一致
+    const newest = existBookmarks.reduce((keep, bm) => {
+        return bm.dateAdded > keep.dateAdded ? bm : keep;
+    }, bookmark);
+
     const otherBookmarks = existBookmarks.filter(bm => {
-        return bm.id !== bookmark.id;
+        return bm.id !== newest.id;
     });
 
     await with_trash_lock(() => add_to_trash(otherBookmarks));
@@ -125,5 +131,5 @@ chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-    chrome.storage.local.remove("recorded_datetime");
+    chrome.storage.local.remove(["recorded_datetime", "enabled_sites"]);
 });
